@@ -5,14 +5,13 @@ const User = require('../models/user.model.js');
 const ConnectedPost = require('../models/connectedPost.models.js');
 const router = express.Router();
 const admin = require('firebase-admin');
-const serviceAccount = require('../../myapp-1f7eb-firebase-adminsdk-m8kjj-54e2d43897.json');
 
+const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
 
-// Initialize Firebase Admin SDK 
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        projectId: 'myapp-1f7eb',
+        projectId: serviceAccount.project_id,
     });
 }
 
