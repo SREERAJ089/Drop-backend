@@ -1,8 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const admin = require('firebase-admin');
-const serviceAccount = require('../../myapp-1f7eb-firebase-adminsdk-m8kjj-54e2d43897.json');
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
 
 const User = require('../models/user.model.js'); 
 const Post = require('../models/post.model.js');
@@ -10,18 +12,21 @@ const ConnectedPost = require('../models/connectedPost.models.js');
 const router = express.Router();
 const Notification = require('../models/notification.model.js');
 
-// Initialize Firebase Admin SDK 
+
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        projectId: 'myapp-1f7eb',
+        projectId: serviceAccount.project_id,
     });
 }
 
+
+
+// Configure Cloudinary
 cloudinary.config({
-    cloud_name: 'dt0tpl6gs',
-    api_key: '491163221773841',
-    api_secret: 'Ow_Ek022ryTlSyL1W5a6mufxUPI',
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 router.post('/addPost', async(req, res) =>{
