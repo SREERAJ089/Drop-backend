@@ -117,7 +117,7 @@ router.post('/signUpUsingGoogle', async(req,res) => {
     try{
         const existingUser = await User.findOne({googleUserId});
         if(existingUser){
-            res.status(400).json({success: false, message: "User with this username already exists! Please login"});
+            res.status(400).json({success: false, message: "User with this userId already exists! Please login"});
         } else {
             const hashedPassword = await bcrypt.hash(password, 10);
             const newUser = new User({
