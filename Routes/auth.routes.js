@@ -9,6 +9,7 @@ const RefreshToken = require('../models/refreshToken.model.js');
 const secretKey = process.env.SECRET_KEY;
 
 const saveRefreshToken = async (username, refreshToken) => {
+    console.log("saving refresh token");
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
 
@@ -173,14 +174,17 @@ router.post('/login', async(req,res) =>{
 });
 
 router.post('/loginUsingGoogle', async(req,res) =>{
+    console.log(req.body);
     const {googleUserId} = req.body;
+    console.log(googleUserId);
     try {
         const user = await User.findOne({googleUserId});
         if(!user){
             return res.status(400).json({ success: false, message: 'user does not exist' });
         }
-
-        const token = jwt.sign({ username }, secretKey, { expiresIn: '15m' });
+        const username = user.username;
+        console.log(username);
+        const token = jwt.sign({username}, secretKey, { expiresIn: '15m' });
         const refreshToken = jwt.sign({username}, secretKey, { expiresIn: '7d' });
 
         await saveRefreshToken(username, refreshToken);
@@ -189,7 +193,7 @@ router.post('/loginUsingGoogle', async(req,res) =>{
 
     } catch (error) {
         
-        
+        console.error(error);   
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
