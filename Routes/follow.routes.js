@@ -60,7 +60,7 @@ router.post('/follow', async(req, res) =>{
             await admin.messaging().send(message);
             
             } catch (error) {
-            
+                console.error(error);
             }
         }
 
