@@ -45,7 +45,7 @@ const verifyToken = (req, res, next) => {
 
 router.post('/authRefresh', async(req, res) => {
     const refreshToken = req.body.refreshToken;
-
+    console.log('refreshToken', refreshToken);
    
     if (!refreshToken) {
         return res.status(403).json({ success: false, message: 'Refresh token missing' });
@@ -65,18 +65,19 @@ router.post('/authRefresh', async(req, res) => {
         }
 
         // Verify the refresh token
-        jwt.verify(refreshToken, secretKey, (err, user) => {
+        jwt.verify(refreshToken, secretKey, async(err, user) => {
             if (err) {
                 return res.status(403).json({ success: false, message: 'Invalid refresh token' });
             }
 
+            const activeUser = await User.findOne({ username: user.username }).select('-password');
             // Issue a new access token
-            const accessToken = jwt.sign({ id: user.id }, secretKey, { expiresIn: '15m' });
-            res.json({ success: true, accessToken });
+            const accessToken = jwt.sign({username: user.username}, secretKey, { expiresIn: '1m' });
+            return res.json({ success: true, accessToken, activeUser});
         });
     } catch (error) {
         
-        res.status(500).json({ success: false, message: 'Server error' });
+            return res.status(500).json({ success: false, message: 'Server error' });
     }
 
 });
@@ -98,7 +99,7 @@ router.post('/signUp', async(req,res) => {
             });
             await newUser.save();
             // const token = jwt.sign({ username }, secretKey, { expiresIn: '24h' });
-            const accessToken = jwt.sign({username}, secretKey, { expiresIn: '15m' });
+            const accessToken = jwt.sign({username}, secretKey, { expiresIn: '1m' });
             const refreshToken = jwt.sign({username}, secretKey, { expiresIn: '7d' });
 
             // Save the refresh token in the database
@@ -130,7 +131,7 @@ router.post('/signUpUsingGoogle', async(req,res) => {
             });
             await newUser.save();
             // const token = jwt.sign({ username }, secretKey, { expiresIn: '24h' });
-            const accessToken = jwt.sign({username}, secretKey, { expiresIn: '15m' });
+            const accessToken = jwt.sign({username}, secretKey, { expiresIn: '1m' });
             const refreshToken = jwt.sign({username}, secretKey, { expiresIn: '7d' });
 
             // Save the refresh token in the database
@@ -155,7 +156,7 @@ router.post('/login', async(req,res) =>{
             return res.status(400).json({ success: false, message: 'user does not exist' });
         }
 
-        const token = jwt.sign({ username }, secretKey, { expiresIn: '15m' });
+        const token = jwt.sign({ username }, secretKey, { expiresIn: '1m' });
         const refreshToken = jwt.sign({username}, secretKey, { expiresIn: '7d' });
 
         await saveRefreshToken(username, refreshToken);
@@ -184,17 +185,17 @@ router.post('/loginUsingGoogle', async(req,res) =>{
         }
         const username = user.username;
         
-        const token = jwt.sign({username}, secretKey, { expiresIn: '15m' });
+        const token = jwt.sign({username}, secretKey, { expiresIn: '1m' });
         const refreshToken = jwt.sign({username}, secretKey, { expiresIn: '7d' });
 
         await saveRefreshToken(username, refreshToken);
 
-        res.json({ success: true, user, token, refreshToken});
+        return res.json({ success: true, user, token, refreshToken});
 
     } catch (error) {
         console.error(error);
          
-        res.status(500).json({ success: false, message: 'Server error' });
+        return res.status(500).json({ success: false, message: 'Server error' });
     }
 });
  
@@ -209,10 +210,10 @@ router.get('/userDetails', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        res.json({success: true, user}); // Return the user data
+        return res.json({success: true, user}); // Return the user data
     } catch (error) {
         
-        
+        console.error(error);
         return res.status(500).json({success: false, message: 'Server Error' });
     }
 });
@@ -232,11 +233,10 @@ router.get('/check-username', async (req, res) => {
         }
 
         // If no user found, the username is available
-        res.status(200).json({ success: true, message: `${username} is available` });
+        return res.status(200).json({ success: true, message: `${username} is available` });
     } catch (error) {
         
-        
-        res.status(500).json({ success: false, message: 'Server error' });
+        return res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 

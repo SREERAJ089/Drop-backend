@@ -13,7 +13,7 @@ router.get('/fetchMessages/:senderUsername/:receiverUsername', async (req, res) 
                 { senderUsername: senderUsername, receiverUsername: receiverUsername },
                 { senderUsername: receiverUsername, receiverUsername: senderUsername },
             ],
-        }).sort({ timestamp: 1 }); // Sorting messages by timestamp
+        }).sort({ timestamp: 1, _id:1 }); // Sorting messages by timestamp
 
         res.status(200).json(messages);
     } catch (error) {
