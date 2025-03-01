@@ -2,6 +2,16 @@ const express = require('express');
 const Message = require('../models/messages.model.js');
 const router = express.Router();
 const User = require('../models/user.model.js');
+const admin = require('firebase-admin');
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: serviceAccount.project_id,
+    });
+}
 
 // Fetch messages API
 router.get('/fetchMessages/:senderUsername/:receiverUsername', async (req, res) => {
@@ -28,6 +38,27 @@ router.post('/messages', async (req, res) => {
     try {
         const newMessage = new Message({ senderUsername, receiverUsername, text, timestamp });
         await newMessage.save();
+
+        // Fetch the target user
+        const targetUser = await User.findOne({ username:receiverUsername });
+
+        // Send push notification if targetUser has an FCM token
+        if (targetUser.fcmToken) {
+            const message = {
+            notification: {
+              title: `${senderUsername}`,
+              body: `${text}`,
+            },
+            token: targetUser.fcmToken, // Target user's FCM token
+            };
+    
+            try {
+            await admin.messaging().send(message);
+            
+            } catch (error) {
+              console.error(error);
+            }
+        }
 
         res.status(201).json(newMessage);
     } catch (error) {
