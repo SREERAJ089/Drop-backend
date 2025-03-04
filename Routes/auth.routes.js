@@ -240,4 +240,16 @@ router.get('/check-username', async (req, res) => {
     }
 });
 
+router.post('/updateFCMToken', async (req, res) => {
+    const { username, fcmToken } = req.body;
+
+    try {
+        await User.findOneAndUpdate({ username }, { fcmToken });
+        res.status(200).json({ success: true, message: 'FCM Token Updated' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update FCM token' });
+    }
+});
+
+
 module.exports = router;
