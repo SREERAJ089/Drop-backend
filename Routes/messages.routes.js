@@ -118,7 +118,7 @@ module.exports = function (io) {
               const message = {
                   notification: {
                       title: `${senderUsername}`,
-                      body: text,
+                      body: `${text}`,
                   },
                   token: targetUser.fcmToken,
               };
