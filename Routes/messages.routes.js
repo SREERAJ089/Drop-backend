@@ -152,16 +152,17 @@ module.exports = function (io) {
         }
     });
 
-    // Typing Indicator
     io.on('connection', (socket) => {
-        socket.on('typing', ({ senderUsername, receiverUsername }) => {
-            socket.broadcast.emit('typing', { senderUsername, receiverUsername });
-        });
+      socket.on('userTyping', ({ senderUsername, receiverUsername, isTyping }) => {
+          io.emit('userTyping', { sender: senderUsername, receiver: receiverUsername, isTyping });
+      });
 
-        socket.on('stopTyping', ({ senderUsername, receiverUsername }) => {
-            socket.broadcast.emit('stopTyping', { senderUsername, receiverUsername });
-        });
+      socket.on('stopTyping', ({ senderUsername, receiverUsername }) => {
+        io.emit('userTyping', { sender: senderUsername, receiver: receiverUsername, isTyping: false });
+      });
+
     });
+  
 
     return router;
 };
