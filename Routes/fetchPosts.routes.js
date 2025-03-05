@@ -19,16 +19,18 @@ router.get('/fetchPosts', async(req, res) =>{
     
         const user = await User.findById(userId);
         const followingId = user.following;
+
+        const userAndFollowingIds = [userId, ...followingId];
     
         const posts = await Post.find({
-            userId : {$in: followingId}, 
+            userId : {$in: userAndFollowingIds}, 
             createdAt : {$gte : yesterday},
         })
         .populate('userId', 'username firstName lastName createdAt hustle creative imageUrl following followers uploads')
         .sort({createdAt: -1});
 
         const connectedPosts = await ConnectedPost.find({
-            userId: {$in: followingId},
+            userId: {$in: userAndFollowingIds},
             createdAt: {$gte: yesterday},
         })
         .populate('userId', 'username firstName lastName createdAt hustle creative imageUrl following followers uploads likedConnectedPost')

@@ -145,7 +145,8 @@ module.exports = function (io) {
                 { senderUsername: username, seen: false },
                 { $set: { seen: true } }
             );
-            io.emit('messageSeen', username);
+            io.to(receiverUsername).emit('messageSeen', senderUsername); 
+
             res.status(200).json({ success: true });
         } catch (error) {
             res.status(500).json({ error: 'Failed to mark messages as seen' });
@@ -153,6 +154,11 @@ module.exports = function (io) {
     });
 
     io.on('connection', (socket) => {
+
+      socket.on('join', (username) => {
+        socket.join(username); // Join room with username
+      });
+
       socket.on('userTyping', ({ senderUsername, receiverUsername, isTyping }) => {
           io.emit('userTyping', { sender: senderUsername, receiver: receiverUsername, isTyping });
       });
